@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星巴 (Simba Qiang Zhuo) - 学术主页</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        /* 隐藏滚动条但保留滚动功能 */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* 简单的淡入动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-[#FDFBF7] text-[#4A3B32] font-sans selection:bg-[#4A7A3A] selection:text-white">
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // 手动实现简单的图标组件以替代 import
+        const Icon = ({ name, size = 24, className = "" }) => {
+            const iconRef = React.useRef(null);
+            
+            useEffect(() => {
+                if (iconRef.current && window.lucide) {
+                    window.lucide.createIcons({
+                        icons: { [name]: window.lucide.icons[name] },
+                        nameAttr: 'data-lucide',
+                        root: iconRef.current.parentNode
+                    });
+                }
+            }, [name]);
+
+            return <i ref={iconRef} data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
+        };
+
+        // ================= 语言包数据 (i18n) =================
+        const i18n = {
+          zh: {
+            nav: { bio: '星巴简介', projects: '野保项目', research: '科研文章', movies: '推荐影视', books: '推荐书籍', quotes: '星巴格言录', notes: '购买电子笔记' },
+            header: {
+              role: '野保探险家',
+              missionLabel: '核心使命：',
+              missionText: '常年驻扎肯尼亚马赛马拉，与猛兽为伍。致力于研究野生动物行为，化解人兽冲突，保护和恢复野生动物栖息地，并连接全球华人参与非洲乃至全球的自然保护行动。'
+            },
+            bio: {
+              title1: '学术与社会职务',
+              roles: [
+                { strong: 'IUCN 世界自然保护联盟', text: ' - 中国委员 (WCPA自然保护地委员会)' },
+                { strong: 'IAPA 国际自然保护地联盟', text: ' - 专家委员' },
+                { strong: '国际灵长类和生物多样性保护中心', text: ' - 委员' },
+                { strong: '大理大学东喜马拉雅学院', text: ' - 客座研究员' },
+                { strong: 'NG 国家地理', text: ' - 中国探享家' },
+                { strong: '马赛马拉纳书莱保护区 (Nashulai Maasai Conservancy)', text: ' - 荣誉管理员 (Honorable Senior Warden)' },
+                { strong: 'HWF栖息地守望者基金会 / MCF马拉野保基金会 / 守望自然野保中心', text: ' - 联合创始人' },
+                { strong: '马拉野保学院', text: ' - 创始人' }
+              ],
+              quote: '首位深入非洲创立民间野保组织的中国人。长期探索基于自然保护为基础让牧民持续受益的“社区保护地模型”。',
+              title2: '野保与探索履历 (Timeline)',
+              timeline: [
+                { period: '早期求学与工作 (1973 - 2010)', desc: '1973年出生于贵州边远山区。1992年考入四川大学外文系。1996年本科毕业后进入重庆市政府工作。2010年，受拯救狮子的使命召唤，辞去公务员职务，独自前往非洲。', color: 'bg-[#C82333]', pulse: false },
+                { period: '扎根非洲与社区保护 (2011 - 2012)', desc: '2011年：创立马拉野保基金会，致力于保护肯尼亚马赛马拉地区的自然栖息地。\n2012年：常驻马赛马拉奥肯耶保护区，建立野保营地，开展巡护员管理、反盗猎、解决人兽冲突、野生动物研究等工作。', color: 'bg-[#4A7A3A]', pulse: false },
+                { period: '学术交流与全球宣讲 (2012 - 2021)', desc: '在此期间，受邀在牛津大学、哈佛大学、麻省理工大学(MIT)、北京大学、四川大学等全球36所顶尖大学、博物馆及图书馆发表主题演讲，传播社区保护理念与经验。', color: 'bg-[#4A7A3A]', pulse: false },
+                { period: '影像传播与社会影响力 (2013 - 2020)', desc: '2013年：与姚明合作拍摄探索频道纪录片《野性的终结》。\n2015年：出席国务院参事室《中国野生动物保护法》专家会议；担任安徽卫视《我们的征途》野保顾问。\n2019年：美国历史频道首播纪录片《狮子之心》(Lion Heart)，讲述星巴传奇经历。\n2020年：央视纪录片《中国国家公园：王者归来》记录星巴寻找野生虎的惊险故事。', color: 'bg-[#4A7A3A]', pulse: false },
+                { period: '野保教育的延续 (2023 - 2025)', desc: '2023年：在肯尼亚创办【马拉野保学院】。\n2025年：正式担任马赛马拉纳书莱保护区 (Nashulai Maasai Conservancy) 荣誉管理员。', color: 'bg-[#C82333]', pulse: true },
+              ],
+              footprints: {
+                title: '星巴演讲足迹',
+                desc: '星巴在全球多地的大学、中小学、博物馆、图书馆、企业以及各类论坛上进行过野生动物保护主题的演讲和讲座。以下是他演讲足迹的详细汇总：',
+                chinaTitle: '中国国内',
+                china: [
+                  { city: '北京', venues: '北京大学、中国人民大学、北京林业大学、中国农业大学、北京电影学院、中央美术学院、中国传媒大学、中科院动物博物馆、北京自然博物馆、中国华侨博物馆' },
+                  { city: '上海', venues: '复旦大学、上海财经大学、上海海事大学、上海图书馆' },
+                  { city: '深圳', venues: '深圳大学、南方科技大学、南山外国语学校、深圳天安云谷、深圳青少年活动中心、香港中文大学（深圳）' },
+                  { city: '广州', venues: '华南理工大学、爱莎国际学校、耀华国际学校' },
+                  { city: '杭州', venues: '浙江大学、桃源里大讲堂、阿里自然讲堂' },
+                  { city: '重庆', venues: '四川美术学院、重庆自然博物馆、重庆科技馆、巴蜀中学、德普国际学校、重庆八中宏帆初中、人民小学' },
+                  { city: '成都', venues: '四川大学（含外国语学院）、西南财经大学、西华大学、金苹果龙南小学' },
+                  { city: '济南', venues: '山东大学、山东省博物馆、济南市图书馆' },
+                  { city: '南京', venues: '南京大学、南京财经学院' },
+                  { city: '青岛', venues: '青岛大学双语实验学校、青岛万象城' },
+                  { city: '贵阳', venues: '贵州师范学院、贵阳一中' },
+                  { city: '武汉', venues: '武汉传媒学院' },
+                  { city: '大理', venues: '大理大学' },
+                  { city: '昆明', venues: '山水保护中心' },
+                  { city: '东莞', venues: '清澜山国际学校' },
+                  { city: '珠海', venues: '容闳书院' },
+                  { city: '烟台', venues: '龙湖葡醍讲堂' },
+                  { city: '金华', venues: '新东方国际学校' },
+                  { city: '其他机构', venues: '美国国家地理《探险家学院》（中国区相关活动）' }
+                ],
+                intlTitle: '其它国家',
+                intl: [
+                  { country: '美国', details: [
+                    { place: '洛杉矶/南加州', venues: '加州大学洛杉矶分校 (UCLA)、南加州大学 (USC)、侨报总部、洛杉矶华人电台 KAZN AM1300、全美首届公益及非营利创业论坛、加州人工智能峰会' },
+                    { place: '旧金山', venues: '谷歌 (Google) 总部' },
+                    { place: '波士顿', venues: '哈佛大学 (Harvard)、麻省理工大学 (MIT)' },
+                    { place: '纽约', venues: '纽约华人工商协会' },
+                    { place: '汉诺威', venues: '达特茅斯大学 (Dartmouth College)' },
+                    { place: '伯灵顿/佛蒙特州', venues: '佛蒙特大学 (UVM) 及蒙彼利埃等地高中' }
+                  ]},
+                  { country: '英国', details: [{ place: '伦敦/牛津', venues: '牛津大学 (Oxford University)、牛津大学非洲论坛主旨发言' }] },
+                  { country: '新西兰', details: [{ place: '奥克兰', venues: '梅西大学 (Massey University)、新西兰 AM936 华人电台' }] },
+                  { country: '肯尼亚', details: [{ place: '内罗毕/马赛马拉', venues: '东非野保协会 (EAWLS)、恩苏瓦尼小学等社区学校' }] }
+                ]
+              }
+            },
+            projects: {
+              title: '星巴及其团队的持续行动',
+              subtitle: '（栖息地守望者基金会 + 守望自然野保发展研究中心 + 马拉野保基金会 + 马拉野保学院 + 东非野保协会）',
+              items: [
+                { iconName: 'users', iconColor: 'text-[#4A7A3A]', title: '一、开创新的社区野保模型', content: ['协助奥肯耶、奥拉罗、纳书莱等社区主导的保护区大力推广可控制的生态旅游。所筹资金用于向签署土地租赁协议的当地家庭支付租金，在保护生态环境和野生动物的同时保障当地社区的可持续生计，减少牧民对放牧的依赖。', '奥肯耶保护区于2018年被IUCN国际自然保护联盟评选为全球15个最佳绿色保护地之一。', '纳书莱保护区于2020年被联合国开发计划署（UNDP）授予赤道奖(Equator Prize)。'] },
+                { iconName: 'shield', iconColor: 'text-[#C82333]', title: '二、捐赠巡护设备', content: ['向马赛马拉及肯尼亚其他地区（如莱基比亚 Laikipia）的22个野生动物保护区捐赠了总价值320,000美元的反盗猎设备。', '包含：5辆汽车、36辆摩托车、200台相机、200件GPS便携设备、300+把手电筒、60+双筒望远镜、6台摄像机、30+帐篷和30+睡袋。', '有效提升了保护区的管理效率，在应对盗猎、非法放牧和人兽冲突等领域发挥了巨大作用。'] },
+                { iconName: 'shield-alert', iconColor: 'text-[#4A7A3A]', title: '三、修建防狮围栏减少冲突', content: ['筹集资金建造了16个防狮畜栏（总价值32,000美元）。', '帮助牧民修建以高大原木加铁丝网为主体的围栏，有效阻止狮子、斑鬣狗等食肉动物攻击牧民的牛羊。', '大幅减少牧民对野生动物的仇恨，有效缓解了双方冲突。'] },
+                { iconName: 'graduation-cap', iconColor: 'text-[#4A7A3A]', title: '四、支持教育', content: ['向6所社区学校捐赠课桌、电脑、体育用品，启动“电子学习项目”建立电子教室和自然保护兴趣班；为学校建立图书馆并捐赠英文书籍。', '为学校建造学生宿舍、修缮屋顶地板、修建太阳能供电系统及储水系统。修建大象防护围栏，保护学生安全。', '支持女性就业聘请女教师；建立“狮子奖学金”支持贫困优秀学生；组织非洲草原运动会与英文写作比赛。'] },
+                { iconName: 'heart', iconColor: 'text-[#C82333]', title: '五、提升妇女地位与社区和谐', content: ['为本地教会修建教堂，成为方圆数十平方公里牧民社交活动的重要场所。', '创建妇女手工学校，免费培训妇女制作手工产品销售给国际游客获取收入。', '支持本地妇女发展养鸡、养蜂和草药推拿项目，实现可持续发展。'] },
+                { iconName: 'school', iconColor: 'text-[#4A7A3A]', title: '六、创建马拉野保学院', content: ['创建野外生存课程和野生动物行为研究课程，培训了1800+来自世界各地的游客。', '带领160+中学生开展科研和可持续发展项目，90%的学生成功进入全球顶尖大学。'] },
+                { iconName: 'building', iconColor: 'text-[#4A7A3A]', title: '七、修建自然保护中心/博物馆', content: ['修建马赛马拉自然保护中心（生命科学博物馆），为国际游客了解马赛马拉自然历史、马赛人传统习俗及野生动物习性提供窗口。', '华大基因CEO尹烨捐赠了40万人民币用于修建和布展工作。'] },
+                { iconName: 'globe', iconColor: 'text-[#4A7A3A]', title: '八、推动跨国保护合作', content: ['促成中国长白山国家级自然保护区与肯尼亚马赛马拉国家级自然保护区结成友好合作伙伴关系，推动跨国合作与知识交流。', '促成纳书莱马赛保护区加入IAPA国际自然保护地联盟。', '参与举办首届“中非野生动植物保护论坛”（2018年，南非金山大学）。'] },
+                { iconName: 'leaf', iconColor: 'text-[#4A7A3A]', title: '九、生态部落共创计划', content: ['筹划于2026年6月在马赛马拉创建生态部落。', '用艺术和文化来支持当地社区实现可持续发展，促进生态环境和野生动物保护事业。'] },
+                { iconName: 'camera', iconColor: 'text-[#4A7A3A]', title: '十、倡导公众参与科研（公民科学）', content: ['星巴团队于2025年启动“马赛马拉大型猫科动物地理调查项目”。', '鼓励前往马赛马拉的普通游客通过拍摄带有地理标记的狮子、花豹和猎豹照片，直接参与顶级肉食动物的习性研究和保护。'] },
+                { iconName: 'video', iconColor: 'text-[#4A7A3A]', title: '十一、媒体与社会宣传', content: ['4次受邀担任央视大迁徙直播解说；担任安徽卫视《我们的征途》野保顾问；与姚明参与探索频道《野性的终结》呼吁关注盗猎。', '邀请邹市明、韩庚、高瀚宇担任野保大使；中国服装设计师梁明玉驻野体验并创作大型环保艺术装置（在北京与英国泰特美术馆展出）。', '在牛津、哈佛、北大等全球36所顶尖大学巡讲；并在小红书、视频号等平台构建自媒体矩阵持续发声。'] },
+                { iconName: 'book', iconColor: 'text-[#4A7A3A]', title: '十二、出版野保书籍', content: ['撰写了《守护狮群》、《马赛马拉Safari旅行指南》、《非洲野外遭遇凶猛动物应对指南》及多部观察与识别图鉴。', '为5岁女儿创作《小星巴玩转非洲》，用以启发中国青少年对野生动物的了解与热爱。'] }
+              ]
+            },
+            research: {
+              title: '研究文献与观察手记',
+              desc: '收录星巴先生基于一线多年驻扎所撰写的生态学研究手稿、社区保护政策建议及纪录片解说文集。',
+              searchPlaceholder: '搜索文章标题、类型、年份或关键词...',
+              readMore: '了解详情',
+              emptyText: '没有找到符合的文献，请尝试更换关键词。',
+              articles: [
+                { year: '2025', type: '保护区治理报告', title: '《马拉河源流研究地理与生态系统综合分析》', desc: '马拉河水系生态综合调研报告。', link: 'https://lionman822.github.io/marariver/' },
+                { year: '2026', type: '政策咨询建议', title: '《马赛马拉的荣嘉狮群》', desc: '本报告深度剖析马赛马拉荣嘉狮群的生态与行为学动态与生态保护干预策略。', link: 'https://lionman822.github.io/rongaipridenew/' },
+                { year: '2025', type: '物种行为学专论', title: '《乌干达野生动物观察指南》', desc: '研究乌干达的地理和野生动物的分布，涵盖主要国家公园和自然保护区。', link: 'https://lionman822.github.io/ugandasafariguide/' },
+                { year: '2026', type: '物种行为学专论', title: '《肯尼亚野生动物观察指南》', desc: '探讨肯尼亚主要国家公园和自然保护区的野生动物种类和可见率。', link: 'https://lionman822.github.io/kenyasafariguide/' }
+              ]
+            },
+            notes: {
+              bannerTitle: '星巴的东非野外观察笔记',
+              bannerDesc: '数十载荒野岁月的凝结,包含各种野生动物生境和习性的手绘图、以及未公开的野保惊险故事。笔记收入的100%将全额支持【马拉野保学院】的在地野保项目，欢迎大家一起来参与支持。',
+              btnText: '立即订阅',
+              items: [
+                { cover: '[观察指南 封面图]', title: '《马赛马拉野生动物观察指南》', desc: '去马赛马拉实地寻找狮子、花豹和猎豹及其它野生动物的专业野外观察与寻踪指南。', price: '￥ 36.00', link: 'https://www.xiaohongshu.com/explore/67f5fd48000000000f033238?xsec_token=ABrR2yr8k0UXBz0P7hCE8JiYVSWqRaAe7X1-jPS059-8M=&xsec_source=pc_user' },
+                { cover: '[图鉴中文版 封面图]', title: '《马赛马拉野生动物识别指南》（中文漫画电子版）', desc: '收录马赛马拉核心物种的手绘图及特征解析，专为中文读者及自然爱好者打造。', price: '￥ 36.00', link: 'https://www.xiaohongshu.com/explore/698ff1b0000000001b0146be?xsec_token=ABpq8uc4pYq5hA02a_SUpitmhFHl8w624vChF0Y3YvzvU=&xsec_source=pc_user' },
+                { cover: '[图鉴英文版 封面图]', title: '《马赛马拉野生动物识别指南》（英文漫画电子版）', desc: '收录马赛马拉核心物种的手绘图及特征解析，学习英语好帮手。', price: '￥ 66.00', link: 'https://www.xiaohongshu.com/explore/69be160e00000000220005e0?xsec_token=ABKslIm4VAum7313M2t7Zg74g2qUttvU9aK3xHQUHW6V8=&xsec_source=pc_user' }
+              ]
+            },
+            movies: {
+              title: '推荐电影与纪录片',
+              desc: '这里收录了星巴先生参与拍摄及强烈推荐的自然与野生动物主题影像作品。',
+              items: [
+                { title: '《狮子之心》(Lion Heart)', platform: '美国历史频道', desc: '首播于2019年，深度讲述了星巴从中国远赴非洲，在荒野中与狮群共处并开展社区保护的传奇经历。', cover: 'https://images.unsplash.com/photo-1614027164847-1b28cfe1df60?auto=format&fit=crop&w=800&q=80' },
+                { title: '《王者归来：中国国家公园》', platform: '央视 (CCTV)', desc: '2020年播映，记录了星巴探索东非森林与寻踪野生虎的惊险曲折故事（第二集：心在荒野）。', cover: '' },
+                { title: '《野性的终结》(The End of the Wild)', platform: '探索频道 (Discovery)', desc: '2013年拍摄，星巴与前NBA巨星姚明共同出镜，呼吁全球关注非洲大象与犀牛偷猎问题。', cover: '' },
+                { title: '《生而自由》(Born Free)', platform: '经典电影', desc: '讲述乔治和乔伊·亚当森夫妇野化狮子“爱尔莎”并帮助其重返大自然的传奇故事。', cover: '' },
+                { title: '《与狮同行》(To Walk with Lions)', platform: '传记电影', desc: '讲述野保先驱托尼·菲茨约翰在非洲遇见乔治·亚当森，并毅然投身野生动物保护的真实经历。', cover: '' },
+                { title: '《走出非洲》(Out of Africa)', platform: '经典电影', desc: '讲述丹麦作家凯伦在东非经营咖啡园的浪漫故事，展现了二十世纪初非洲大地的壮美与沧桑。', cover: '' }
+              ]
+            },
+            books: {
+              title: '推荐书籍',
+              desc: '关于自然、荒野与人类反思的经典之作，马拉野保学院推荐书目。',
+              items: [
+                { title: '《守护狮群》', author: '星巴著', desc: '三联书店出版。记录了星巴在马赛马拉与狮群共处的真实经历与深入一线的有趣故事。' },
+                { title: '《马赛马拉野生动物观察指南》', author: '星巴著', desc: '去马赛马拉实地寻找狮子、花豹和猎豹及其它野生动物的野外观察指南，请前往小红书关注并搜索“星巴野保日记”获取购买途径。' },
+                { title: '《母狮爱尔莎》', author: '乔伊·亚当森 (Joy Adamson) 著', desc: '经典的野保文学作品，讲述了人类与母狮之间建立的深厚情感与回归自然的故事。' },
+                { title: '《生而狂野》', author: '托尼·菲茨约翰 (Tony Fitzjohn) 著', desc: '展现了东非野生动物保护先驱们在荒野中充满挑战与激情的传奇人生。' }
+              ]
+            },
+            quotes: {
+              title: '星巴格言录',
+              desc: '源自东非荒野的深刻感悟，关于自然、生命与共存。',
+              items: [
+                `如果你不怕人类，就更不用怕狮子。`,
+                `世界上最危险的物种不是那些凶猛动物，而是人类。`,
+                `野生动物都知道要与自己栖息的环境共生，但人类却在一步一步摧毁自己赖以生存的生态环境。`,
+                `野生动物比我们想象的要智慧很多。`,
+                `狮子捕杀食草动物，表面上看有些残忍，但实际上狮子捕杀老弱病残的倾向实际是在帮助这些食草动物提高基因质量，只有身体更壮、速度更快、反应更敏锐的动物才能够繁衍后代。`,
+                `狮子吃饱了，就不会再捕猎。相比之下，人类的欲望就太多了，不仅要考虑今天，还要考虑明天，不仅要考虑自己，还要考虑传宗接代。`,
+                `大部分野生动物的听觉、视觉和嗅觉都比人类要好很多。`,
+                `依赖城市生活的人很难在野外生存下去。`,
+                `世界和平和国际合作是保护全球生态环境的先决条件。`,
+                `各国都要警惕狭隘的民族主义，这种倾向不仅有害于国家，更有害于世界。`,
+                `野生动物没有护照，它们不属于哪一个国家或几个国家，它们属于世界，需要集合全球之力去保护它们。`,
+                `野生动物灭绝的今天，也会是人类消亡的明天。`,
+                `越了解人类，就越喜欢野生动物。`,
+                `野生动物很单纯，喜欢你就离你近一点，不喜欢你就远离你。`,
+                `很多人很害怕凶猛动物，但事实是多数野生动物都很害怕人类，通常不会在没有受到威胁或没有退路的情况下主动攻击人类。`,
+                `与野生动物保持安全距离是与它们和谐相处的首要原则。`,
+                `喂食野生动物会导致野生动物更依赖人类更容易出现骚扰和攻击人类的情况。`,
+                `世界上有很多地方其实并不适合人类居住，比如很多地震带。野生动物不会被地震伤害，但人类却很容易被地震伤害，因为人类喜欢生活在钢筋混凝土木板搭建的楼房里面。`,
+                `世界上任何事物都有两面性，非洲草原上的蚊子和采采蝇表面上看对人类是个威胁，但也有效阻挡了人类扩张的步伐。`,
+                `任何物种的数量都不能超过大自然的承载度。在非洲草原上，狮子、花豹、猎豹、斑鬣狗、黑背豺可以有效控制食草动物的数量，避免数量过多的食草动物毁灭生个草原。`,
+                `如果没有足够大的生存空间和安全的迁徙廊道，大象对森林会造成灾难性的影响。`,
+                `在非洲草原上，食肉动物之间不仅是竞争的关系，其实也有合作的关系。狮子捕猎食草动物消耗的体力要远远大于抢夺斑鬣狗食物所消耗的体力，反之也是这样，斑鬣狗也依赖狮子捕猎能够分到一些食物，如果没有狮子，它们就需要自己捕猎，这样它们生存的难度会加大。`,
+                `这个世界可以没有人类，但不能没有野生动物，野生动物不会污染环境，更不会发明核武器去摧毁地球。`,
+                `非洲草原上为什么没有臭味，因为有完整的食物链可以有效分解动物尸体和粪便。反之，人类放牧或养猪养鸡的地方却臭气熏天，也是因为没有完整的食物链。`,
+                `保护野生动物不要灭绝，不仅仅是因为它们也有生存的权利，更因为我们人类离不开野生动物。`,
+                `为什么有些地方的狒狒和猴子经常会抢夺人类的食物，而纯野外的狒狒和猴子不会？原因就是喂食，被人类经常喂食的野生动物会逐渐丧失害怕人类的天性，敢于主动接近人类。`,
+                `野生动物保护的关键是野生动物栖息地的保护。`,
+                `野生动物保护最有效的办法是保护现有的栖息地及恢复更多以前的栖息地。`,
+                `人类的扩张是野生动物栖息地不断缩小的主要原因，建立更多国家公园和其他各种形式的自然保护地是当务之急。`,
+                `当地牧民能否得到稳定和可观的收入是减少放牧转化更多牧场成为自然保护地的先决条件。`,
+                `食草动物里同物种的身体冲突要远远多于不同物种之间的身体冲突。`,
+                `生态旅行对野生动物保护至关重要，无论是国家公园还是私人保护区都依赖于生态旅行。`,
+                `没有流量控制的大众旅行对于野生动物保护是弊大于利。`,
+                `牧民修筑围栏对于野生动物的迁徙造成了很严重的干扰，解决之道是租用或购买他们的土地，确保他们的收入要大于放牧的收入。`,
+                `过度放牧会造成草原植被退化、水土流失、人兽冲突和生物多样性丧失，最终受害的还是牧民自己。`,
+                `教育有助于改善牧民生活，教育水平越高的人越不愿意放牧，他们更愿意去城市享受现代生活。`,
+                `妇女地位高低是反应一个社会是否文明的标志，妇女地位越高的地方，冲突和战争越少，人口激增的风险也越小。`,
+                `任何国家都没有破坏本国生态环境的权力，因为地球上只有一个生态环境，包括陆地生态环境和海洋生态环境，各地生态环境互相影响，没有国界，任何一个地方的生态环境遭到破坏，都会影响其他地区。`,
+                `保护地球生态是每个国家的责任，但大国应该负起更多的责任。`,
+                `保护生态环境不应该仅仅是政府和科学家的事，也是每个公民都应该去做的事。`,
+                `每个人都有自己的小家，照顾小家无可厚非，但地球环境是大家，照顾小家的同时也应该为大家做贡献，如果大家没了，何来小家？`,
+                `人生短暂，世事无常，有梦想就要早点去实现，否则会后悔一辈子。`,
+                `我已经实现了自己儿时的梦想，把兴趣和爱好变成自己的工作和生活，每天都很快乐，很享受这样的生活，我感觉自己是世界上最快乐的人。`,
+                `很多地方本没有路，需要穿越荆棘，需要有一个人先去走一次，慢慢后面就会有人跟上，就会变成了一条坦途。`,
+                `真正的朋友是关键时候站得出来挺你帮助你的人。`,
+                `人生其实就是不断寻找志同道合的朋友一路同行不离不弃一起做有意义的事情的历程，我很庆幸我找到了很多这样的朋友。`
+              ]
+            },
+            footer: {
+              official: '官方资质与版权',
+              publish: '发布：',
+              academy: '马拉野保学院',
+              founderLabel: '创始人：',
+              founderName: '星巴',
+              rights: '© 2026 Simba Qiang Zhuo & Mara Conservation Academy. All rights reserved.',
+              followTitle: '关注星巴 / 关注我们',
+              socials: ['小红书：星巴野保日记', '微信公众号：非洲野保故事', '微信视频号：星巴野保探险家']
+            }
+          },
+          en: {
+            nav: { bio: 'About Simba', projects: 'Conservation', research: 'Research', movies: 'Movies & Docs', books: 'Books', quotes: 'Quotes', notes: 'E-Notes' },
+            header: {
+              role: 'Wildlife Explorer / Founder of Mara Conservation Academy',
+              missionLabel: 'Core Mission: ',
+              missionText: 'Stationed year-round in the Maasai Mara, Kenya, living alongside apex predators. Dedicated to studying wildlife behavior, mitigating human-wildlife conflicts, protecting and restoring habitats, and connecting the global Chinese community to conservation efforts in Africa and worldwide.'
+            },
+            bio: {
+              title1: 'Academic & Social Roles',
+              roles: [
+                { strong: 'IUCN World Commission on Protected Areas (WCPA)', text: ' - China Member' },
+                { strong: 'International Alliance of Protected Areas (IAPA)', text: ' - Expert Committee Member' },
+                { strong: 'International Primate & Biodiversity Conservation Center', text: ' - Committee Member' },
+                { strong: 'Institute of Eastern-Himalaya Biodiversity Research, Dali University', text: ' - Guest Researcher' },
+                { strong: 'National Geographic Explorer', text: ' - China' },
+                { strong: 'Nashulai Maasai Conservancy', text: ' - Honorable Senior Warden' },
+                { strong: 'Habitat Defenders Foundation (HWF) / Mara Conservation Fund (MCF) / Watch Nature Conservation Center', text: ' - Co-Founder' },
+                { strong: 'Mara Conservation Academy', text: ' - Founder' }
+              ],
+              quote: 'The first Chinese national to venture deep into Africa to establish an NGO for wildlife conservation. A pioneer of the "Community Conservancy Model" enabling sustainable benefits for local pastoralists.',
+              title2: 'Conservation & Exploration Timeline',
+              timeline: [
+                { period: 'Early Education & Career (1973 - 2010)', desc: 'Born in a remote mountainous area of Guizhou in 1973. Enrolled in Sichuan University in 1992. Worked for the Chongqing Municipal Government from 1996. Resigned in 2010, called by a mission to save lions, and journeyed alone to Africa.', color: 'bg-[#C82333]', pulse: false },
+                { period: 'Rooting in Africa (2011 - 2012)', desc: '2011: Founded Mara Conservation Fund to protect natural habitats in the Maasai Mara.\n2012: Established a conservation camp in Ol Kinyei Conservancy, spearheading ranger management, anti-poaching, conflict resolution, and wildlife research.', color: 'bg-[#4A7A3A]', pulse: false },
+                { period: 'Global Advocacy (2012 - 2021)', desc: 'Delivered keynote speeches at 36 top global institutions including Oxford, Harvard, MIT, Peking University, and Sichuan University, spreading the philosophy of community-based conservation.', color: 'bg-[#4A7A3A]', pulse: false },
+                { period: 'Media & Social Impact (2013 - 2020)', desc: '2013: Co-starred in Discovery Channel doc "The End of the Wild" with Yao Ming.\n2015: Advised China\'s State Council on wildlife protection laws.\n2019: Featured in the History Channel documentary "Lion Heart".\n2020: Featured in CCTV documentary searching for wild tigers.', color: 'bg-[#4A7A3A]', pulse: false },
+                { period: 'Advancing Conservation Education (2023 - 2025)', desc: '2023: Founded the [Mara Conservation Academy] in Kenya.\n2025: Officially appointed as Honorable Senior Warden of Nashulai Maasai Conservancy.', color: 'bg-[#C82333]', pulse: true },
+              ],
+              footprints: {
+                title: 'Speaking Footprints',
+                desc: 'Simba has delivered speeches and lectures on wildlife conservation at universities, schools, museums, libraries, corporations, and various forums worldwide. Here is a detailed summary of his speaking footprint:',
+                chinaTitle: 'China',
+                china: [
+                  { city: 'Beijing', venues: 'Peking Univ, Renmin Univ of China, Beijing Forestry Univ, China Agricultural Univ, Beijing Film Academy, Central Academy of Fine Arts, Communication Univ of China, National Zoological Museum, Beijing Museum of Natural History, Overseas Chinese History Museum' },
+                  { city: 'Shanghai', venues: 'Fudan Univ, Shanghai Univ of Finance and Economics, Shanghai Maritime Univ, Shanghai Library' },
+                  { city: 'Shenzhen', venues: 'Shenzhen Univ, Southern Univ of Science and Technology, Nanshan Foreign Language School, Tian\'an Cloud Park, Shenzhen Youth Activity Center, CUHK-Shenzhen' },
+                  { city: 'Guangzhou', venues: 'South China Univ of Technology, ISA International School, Yew Wah International Education School' },
+                  { city: 'Hangzhou', venues: 'Zhejiang Univ, Taoyuanli Grand Lecture, Alibaba Nature Lecture' },
+                  { city: 'Chongqing', venues: 'Sichuan Fine Arts Institute, Chongqing Natural History Museum, Chongqing Science and Technology Museum, Bashu Secondary School, Depu Foreign Language School, Chongqing No.8 Secondary School, Renmin Primary School' },
+                  { city: 'Chengdu', venues: 'Sichuan Univ, Southwestern Univ of Finance and Economics, Xihua Univ, Golden Apple Longnan Primary School' },
+                  { city: 'Jinan', venues: 'Shandong Univ, Shandong Museum, Jinan Library' },
+                  { city: 'Nanjing', venues: 'Nanjing Univ, Nanjing Univ of Finance & Economics' },
+                  { city: 'Qingdao', venues: 'Qingdao Univ Bilingual Experimental School, Qingdao MixC' },
+                  { city: 'Guiyang', venues: 'Guizhou Normal College, Guiyang No.1 High School' },
+                  { city: 'Wuhan', venues: 'Wuhan Univ of Communication' },
+                  { city: 'Dali', venues: 'Dali Univ' },
+                  { city: 'Kunming', venues: 'Shan Shui Conservation Center' },
+                  { city: 'Dongguan', venues: 'Tsinglan School' },
+                  { city: 'Zhuhai', venues: 'Ronghong School' },
+                  { city: 'Yantai', venues: 'Longfor Puti Lecture' },
+                  { city: 'Jinhua', venues: 'New Oriental International School' },
+                  { city: 'Others', venues: 'National Geographic "Explorer Academy" (China region events)' }
+                ],
+                intlTitle: 'International',
+                intl: [
+                  { country: 'United States', details: [
+                    { place: 'Los Angeles / SoCal', venues: 'UCLA, USC, The China Press HQ, KAZN AM1300, 1st National Public Welfare & Non-profit Entrepreneurship Forum, California AI Summit' },
+                    { place: 'San Francisco', venues: 'Google Headquarters' },
+                    { place: 'Boston', venues: 'Harvard University, MIT' },
+                    { place: 'New York', venues: 'New York Chinese Business Association' },
+                    { place: 'Hanover', venues: 'Dartmouth College' },
+                    { place: 'Burlington / VT', venues: 'University of Vermont (UVM), Montpelier High School, etc.' }
+                  ]},
+                  { country: 'United Kingdom', details: [{ place: 'London/Oxford', venues: 'Oxford University, Keynote at Oxford Africa Forum' }] },
+                  { country: 'New Zealand', details: [{ place: 'Auckland', venues: 'Massey University, AM936 Chinese Radio' }] },
+                  { country: 'Kenya', details: [{ place: 'Nairobi/Mara', venues: 'East African Wild Life Society, Nkoilale Primary School and other community schools' }] }
+                ]
+              }
+            },
+            projects: {
+              title: 'Continuous Actions by Simba & His Team',
+              subtitle: '(Habitat Defenders Foundation + Watch Nature Conservation Development Research Center + Mara Conservation Fund + Mara Conservation Academy + East African Wildlife Conservation Society)',
+              items: [
+                { iconName: 'users', iconColor: 'text-[#4A7A3A]', title: 'I. Pioneering Community Conservancy Model', content: ['Assisted community-led conservancies (Ol Kinyei, Olarro, Nashulai) in promoting controlled eco-tourism. Funds raised pay land lease to local families, ensuring sustainable livelihoods and reducing reliance on grazing.', 'Ol Kinyei Conservancy was named one of the Global Top 15 Green Protected Areas by IUCN in 2018.', 'Nashulai Conservancy was awarded the Equator Prize by UNDP in 2020.'] },
+                { iconName: 'shield', iconColor: 'text-[#C82333]', title: 'II. Donating Patrol Equipment', content: ['Donated $320,000 worth of anti-poaching equipment to 22 wildlife conservancies in Maasai Mara and Laikipia.', 'Includes: 5 vehicles, 36 motorcycles, 200 cameras, 200 portable GPS units, 300+ flashlights, 60+ binoculars, 6 video cameras, 30+ tents, and 30+ sleeping bags.', 'Significantly improved management efficiency against poaching, illegal grazing, and human-wildlife conflict.'] },
+                { iconName: 'shield-alert', iconColor: 'text-[#4A7A3A]', title: 'III. Building Lion-Proof Fences', content: ['Raised funds to build 16 lion-proof bomas (total value $32,000).', 'Helped pastoralists construct fences mainly of tall logs and wire mesh to effectively stop predators like lions and hyenas from attacking livestock.', 'Greatly reduced pastoralists\' hatred towards wildlife and retaliatory killings.'] },
+                { iconName: 'graduation-cap', iconColor: 'text-[#4A7A3A]', title: 'IV. Supporting Education', content: ['Donated desks, laptops, and supplies to 6 community schools; built 2 e-learning classrooms and launched 4 conservation interest classes.', 'Built libraries, dormitories, solar power systems, water storage, and elephant-proof fences for schools.', 'Hired female teachers, established the "Lion Scholarship" for poor students, and organized Savannah Sports Meets and English writing competitions.'] },
+                { iconName: 'heart', iconColor: 'text-[#C82333]', title: 'V. Empowering Women & Communities', content: ['Built a local church serving as an essential social hub for pastoralists across dozens of square kilometers.', 'Created a women\'s handicraft school offering free training to make and sell products to tourists.', 'Supported women in developing poultry, beekeeping, and herbal massage projects for extra income.'] },
+                { iconName: 'school', iconColor: 'text-[#4A7A3A]', title: 'VI. Establishing Mara Conservation Academy', content: ['Created wilderness survival and wildlife behavior courses, training over 1,800 international visitors.', 'Led 160+ high school students in scientific and sustainable development projects, with 90% successfully entering top global universities.'] },
+                { iconName: 'building', iconColor: 'text-[#4A7A3A]', title: 'VII. Building Nature Center/Museum', content: ['Constructed the Maasai Mara Nature Conservation Center (Life Science Museum) as a window for tourists to learn about natural history, Maasai traditions, and wildlife behaviors.', 'Yin Ye, CEO of BGI Group, donated 400,000 RMB for the construction and exhibition.'] },
+                { iconName: 'globe', iconColor: 'text-[#4A7A3A]', title: 'VIII. Transnational Cooperation', content: ['Facilitated a friendly partnership between China\'s Changbaishan National Nature Reserve and Kenya\'s Maasai Mara National Reserve.', 'Helped Nashulai Maasai Conservancy join the International Alliance of Protected Areas (IAPA).', 'Co-hosted the first "China-Africa Wildlife Conservation Forum" at Wits University, South Africa (2018).'] },
+                { iconName: 'leaf', iconColor: 'text-[#4A7A3A]', title: 'IX. Eco-Tribe Co-Creation Plan', content: ['Planning to establish an "Eco-Tribe" in the Maasai Mara in June 2026.', 'Utilizing art and culture to support local sustainable development and promote ecological and wildlife conservation.'] },
+                { iconName: 'camera', iconColor: 'text-[#4A7A3A]', title: 'X. Advocating Citizen Science', content: ['Launched the "Maasai Mara Big Cats Geographic Survey Project" in 2025.', 'Encourages tourists to participate directly in apex predator research and conservation by taking geo-tagged photos of lions, leopards, and cheetahs.'] },
+                { iconName: 'video', iconColor: 'text-[#4A7A3A]', title: 'XI. Media & Social Advocacy', content: ['Served as field commentator for CCTV\'s "Great Migration" live broadcasts and conservation advisor for Anhui TV.', 'Co-starred with NBA legend Yao Ming in Discovery\'s "The End of the Wild" against poaching.', 'Invited celebrities as ambassadors and artists to create environmental installations exhibited in Beijing and the UK\'s Tate Modern.', 'Delivered speeches at 36 top global universities and built a strong social media presence (Xiaohongshu, YouTube, etc.).'] },
+                { iconName: 'book', iconColor: 'text-[#4A7A3A]', title: 'XII. Publishing Books', content: ['Authored multiple books and field guides including "Guarding the Prides", "Maasai Mara Safari Guide", and bilingual wildlife ID guides.', 'Created the children\'s book "Little Simba Explores Africa" for his 5-year-old daughter to inspire the younger generation.'] }
+              ]
+            },
+            research: {
+              title: 'Research & Field Notes',
+              desc: 'A collection of ecological manuscripts, policy recommendations, and documentary commentaries written by Simba during his years on the frontline.',
+              searchPlaceholder: 'Search by title, type, year, or keywords...',
+              readMore: 'Read More',
+              emptyText: 'No literature found matching your keywords.',
+              articles: [
+                { year: '2025', type: 'Conservancy Report', title: 'Comprehensive Geographical and Ecological Analysis of the Mara River Basin', desc: 'A comprehensive ecological survey report on the Mara River system.', link: 'https://lionman822.github.io/marariver/' },
+                { year: '2026', type: 'Policy Proposal', title: 'The Rongai Pride of the Maasai Mara', desc: 'An in-depth analysis of the ecological and behavioral dynamics of the Rongai lion pride and intervention strategies.', link: 'https://lionman822.github.io/rongaipridenew/' },
+                { year: '2025', type: 'Behavioral Study', title: 'Uganda Wildlife Observation Guide', desc: 'Studying the geography and wildlife distribution across major national parks in Uganda.', link: 'https://lionman822.github.io/ugandasafariguide/' },
+                { year: '2026', type: 'Behavioral Study', title: 'Kenya Wildlife Observation Guide', desc: 'Exploring wildlife species and visibility rates across Kenya\'s major conservancies.', link: 'https://lionman822.github.io/kenyasafariguide/' }
+              ]
+            },
+            notes: {
+              bannerTitle: "Simba's East Africa Field Notes",
+              bannerDesc: "A culmination of decades in the wild. Featuring hand-drawn maps of wildlife habitats and behaviors, and unreleased conservation stories. 50% of proceeds support local conservation projects by the Mara Conservation Academy.",
+              btnText: 'Subscribe',
+              items: [
+                { cover: '[Guide Cover]', title: 'Maasai Mara Wildlife Observation Guide', desc: 'A professional field guide for tracking and observing lions, leopards, cheetahs, and other wildlife in the Maasai Mara.', price: '¥ 36.00', link: 'https://www.xiaohongshu.com/explore/67f5fd48000000000f033238?xsec_token=ABrR2yr8k0UXBz0P7hCE8JiYVSWqRaAe7X1-jPS059-8M=&xsec_source=pc_user' },
+                { cover: '[ID Guide CN Cover]', title: 'Maasai Mara Wildlife ID Guide (Chinese Comic Edition)', desc: 'Hand-drawn illustrations and identification features of core Maasai Mara species, tailored for Chinese readers.', price: '¥ 36.00', link: 'https://www.xiaohongshu.com/explore/698ff1b0000000001b0146be?xsec_token=ABpq8uc4pYq5hA02a_SUpitmhFHl8w624vChF0Y3YvzvU=&xsec_source=pc_user' },
+                { cover: '[ID Guide EN Cover]', title: 'Maasai Mara Wildlife ID Guide (English Comic Edition)', desc: 'Hand-drawn illustrations and identification features of core Maasai Mara species, great for learning English.', price: '¥ 66.00', link: 'https://www.xiaohongshu.com/explore/69be160e00000000220005e0?xsec_token=ABKslIm4VAum7313M2t7Zg74g2qUttvU9aK3xHQUHW6V8=&xsec_source=pc_user' }
+              ]
+            },
+            movies: {
+              title: 'Recommended Documentaries',
+              desc: 'A curated collection of nature and wildlife films featuring Simba or highly recommended by the Academy.',
+              items: [
+                { title: 'Lion Heart', platform: 'History Channel', desc: 'Premiered in 2019, this documentary chronicles Simba\'s legendary journey from China to Africa, living alongside lions and initiating community conservation.', cover: 'https://images.unsplash.com/photo-1614027164847-1b28cfe1df60?auto=format&fit=crop&w=800&q=80' },
+                { title: 'Return of the King', platform: 'CCTV', desc: 'Broadcasted in 2020, documenting Simba\'s thrilling exploration in tracking wild tigers (Episode 2: Heart in the Wilderness).', cover: '' },
+                { title: 'The End of the Wild', platform: 'Discovery Channel', desc: 'Filmed in 2013, featuring Simba and NBA star Yao Ming to raise global awareness against rhino and elephant poaching.', cover: '' },
+                { title: 'Born Free', platform: 'Classic Movie', desc: 'The legendary story of George and Joy Adamson rehabilitating Elsa the lioness and helping her return to the wild.', cover: '' },
+                { title: 'To Walk with Lions', platform: 'Biographical Film', desc: 'Chronicles conservation pioneer Tony Fitzjohn\'s meeting with George Adamson and his lifelong dedication to African wildlife.', cover: '' },
+                { title: 'Out of Africa', platform: 'Classic Movie', desc: 'The romantic epic of Danish author Karen Blixen in East Africa, showcasing the breathtaking beauty and history of the continent.', cover: '' }
+              ]
+            },
+            books: {
+              title: 'Recommended Books',
+              desc: 'Classic literature on nature, wilderness, and human reflection, recommended by the Mara Conservation Academy.',
+              items: [
+                { title: 'Guarding the Prides', author: 'By Simba', desc: 'Published by SDX Joint Publishing Company. Chronicles Simba\'s real-life experiences and frontline conservation reflections while living alongside lion prides in the Maasai Mara.' },
+                { title: 'Maasai Mara Wildlife Observation Guide', author: 'By Simba', desc: 'Practical E-notes. A comprehensive field observation guide. Available for purchase on Xiaohongshu (Search: 星巴野保日记).' },
+                { title: 'Born Free', author: 'By Joy Adamson', desc: 'A classic of conservation literature, telling the profound story of the bond between humans and Elsa the lioness raised to return to the wild.' },
+                { title: 'Born Wild', author: 'By Tony Fitzjohn', desc: 'Showcases the challenging and passionate legendary lives of East African wildlife conservation pioneers in the wilderness.' }
+              ]
+            },
+            quotes: {
+              title: 'Simba\'s Quotes',
+              desc: 'Profound reflections on nature, life, and coexistence, forged in the East African wilderness.',
+              items: [
+                `If you are not afraid of humans, you have even less reason to be afraid of lions.`,
+                `The most dangerous species in the world is not those ferocious animals, but human beings.`,
+                `Wildlife knows how to coexist with their habitats, but humans are step-by-step destroying the very ecological environment on which they depend.`,
+                `Wildlife is far wiser than we imagine.`,
+                `It may seem cruel when lions hunt herbivores, but by preying on the old, weak, sick, and disabled, lions are actually helping these species improve their genetic quality. Only the stronger, faster, and more responsive animals can reproduce.`,
+                `Once a lion is full, it stops hunting. Humans, by contrast, have too many desires—worrying not only about today but also tomorrow, not only about themselves but also about their descendants.`,
+                `The hearing, vision, and sense of smell of most wild animals are far superior to those of humans.`,
+                `People who rely on city life will find it very hard to survive in the wild.`,
+                `World peace and international cooperation are prerequisites for global ecological conservation.`,
+                `Every country must be wary of narrow nationalism; this tendency is harmful not only to the nation but to the world.`,
+                `Wildlife has no passport. They do not belong to one or a few countries; they belong to the world, and protecting them requires a global effort.`,
+                `The extinction of wildlife today will lead to the demise of humanity tomorrow.`,
+                `The more I understand humans, the more I like wild animals.`,
+                `Wildlife is very simple. If they like you, they come closer; if they don't, they stay away.`,
+                `Many people are terrified of fierce animals, but the truth is most wild animals are terrified of humans and generally will not attack unless threatened or cornered.`,
+                `Keeping a safe distance from wildlife is the first principle of living in harmony with them.`,
+                `Feeding wild animals makes them dependent on humans and far more likely to harass or attack people.`,
+                `Many places in the world, such as fault lines, are not actually suitable for human habitation. Earthquakes don't hurt wild animals, but they easily harm humans because we choose to live in concrete and wooden buildings.`,
+                `Everything in the world has two sides. Mosquitoes and tsetse flies on the African savanna might seem like a threat to humans, but they have effectively hindered the pace of human expansion.`,
+                `No species' population can exceed nature's carrying capacity. On the African savanna, lions, leopards, cheetahs, hyenas, and jackals effectively control herbivore numbers, preventing overpopulation from destroying the grasslands.`,
+                `Without sufficient living space and safe migration corridors, elephants can have a catastrophic impact on forests.`,
+                `On the African savanna, predators are not just competitors; they are also collaborators. A lion expends much more energy hunting than stealing from hyenas, and vice versa. Hyenas rely on lions for scavenged meals; without lions, they would have to hunt for themselves, making survival much harder.`,
+                `This world can exist without humans, but it cannot exist without wildlife. Wildlife doesn't pollute the environment, nor will it invent nuclear weapons to destroy the Earth.`,
+                `Why is there no foul smell on the African savanna? Because a complete food chain effectively decomposes animal carcasses and feces. Conversely, areas where humans graze livestock or raise pigs and chickens stink because they lack this complete food chain.`,
+                `We must save wildlife from extinction not just because they have a right to live, but because humanity cannot survive without them.`,
+                `Why do baboons and monkeys in some areas frequently steal human food, while purely wild ones do not? The answer is feeding. Wildlife frequently fed by humans gradually lose their natural fear and dare to approach proactively.`,
+                `The key to wildlife conservation is the protection of wildlife habitats.`,
+                `The most effective way to protect wildlife is to protect existing habitats and restore former ones.`,
+                `Human expansion is the main reason for shrinking wildlife habitats. Establishing more national parks and other forms of nature reserves is an urgent priority.`,
+                `Ensuring that local pastoralists earn a stable and substantial income is a prerequisite for reducing grazing and converting more pastures into nature reserves.`,
+                `Physical conflicts among herbivores of the same species are far more frequent than conflicts between different species.`,
+                `Eco-tourism is crucial for wildlife conservation; both national parks and private conservancies depend on it.`,
+                `Mass tourism without capacity control does more harm than good to wildlife conservation.`,
+                `Fences built by pastoralists cause severe disruption to wildlife migration. The solution is to lease or buy their land, ensuring their income exceeds what they make from grazing.`,
+                `Overgrazing causes grassland degradation, soil erosion, human-wildlife conflict, and biodiversity loss. Ultimately, the pastoralists themselves are the victims.`,
+                `Education helps improve pastoralists' lives. Those with higher education levels are less willing to graze livestock and prefer to enjoy modern life in the cities.`,
+                `The status of women is a hallmark of a civilized society. Where women's status is higher, there are fewer conflicts and wars, and a lower risk of population explosion.`,
+                `No country has the right to destroy its own ecological environment, because Earth has only one interconnected ecological environment (land and marine). Ecological destruction anywhere affects the rest of the world.`,
+                `Protecting the global ecology is the responsibility of every country, but major powers must shoulder greater responsibilities.`,
+                `Environmental protection shouldn't be left only to governments and scientists; it is something every citizen should participate in.`,
+                `Everyone has their own small family, and it is natural to take care of it. But the Earth's environment is our grand family. While caring for our own, we must also contribute to the whole. If the grand family is gone, where will the small family be?`,
+                `Life is short and unpredictable. If you have a dream, realize it early, or you'll regret it for a lifetime.`,
+                `I have fulfilled my childhood dream, turning my passion and hobbies into my work and life. I am happy every day and truly enjoy this lifestyle. I feel like the happiest person in the world.`,
+                `In many places, there are no roads. You must traverse the thorns, and someone has to be the first to walk it. Slowly, others will follow, and it will become a smooth path.`,
+                `True friends are those who step up to support and help you at critical moments.`,
+                `Life is essentially a journey of continuously finding like-minded friends, walking together without giving up, and doing meaningful things. I am very fortunate to have found many such friends.`
+              ]
+            },
+            footer: {
+              official: 'Official Credentials & Copyright',
+              publish: 'Published by: ',
+              academy: 'Mara Conservation Academy',
+              founderLabel: 'Founder: ',
+              founderName: 'Simba',
+              rights: '© 2026 Simba Qiang Zhuo & Mara Conservation Academy. All rights reserved.',
+              followTitle: 'Follow Us',
+              socials: ['Xiaohongshu: 星巴野保日记', 'WeChat Official: 非洲野保故事', 'WeChat Video: 星巴野保探险家']
+            }
+          }
+        };
+
+        function App() {
+          const [activeTab, setActiveTab] = useState('bio');
+          const [searchQuery, setSearchQuery] = useState('');
+          const [lang, setLang] = useState('zh'); 
+
+          // 确保lucide图标被渲染
+          useEffect(() => {
+              if(window.lucide) {
+                  window.lucide.createIcons();
+              }
+          });
+
+          const t = i18n[lang];
+
+          const tabs = [
+            { id: 'bio', label: t.nav.bio, iconName: 'user' },
+            { id: 'quotes', label: t.nav.quotes, iconName: 'quote' },
+            { id: 'projects', label: t.nav.projects, iconName: 'shield' },
+            { id: 'research', label: t.nav.research, iconName: 'book-open' },
+            { id: 'movies', label: t.nav.movies, iconName: 'film' },
+            { id: 'books', label: t.nav.books, iconName: 'library' },
+            { id: 'notes', label: t.nav.notes, iconName: 'shopping-bag' }
+          ];
+
+          // 排序与过滤逻辑
+          const filteredAndSortedArticles = [...t.research.articles]
+            .sort((a, b) => parseInt(b.year) - parseInt(a.year))
+            .filter(article => {
+              const query = searchQuery.toLowerCase();
+              return (
+                article.title.toLowerCase().includes(query) ||
+                article.type.toLowerCase().includes(query) ||
+                article.year.includes(query) ||
+                (article.desc && article.desc.toLowerCase().includes(query))
+              );
+            });
+
+          return (
+            <div className="min-h-screen pb-20 relative">
+              
+              {/* 语言切换按钮 */}
+              <button 
+                onClick={() => setLang(lang === 'zh' ? 'en' : 'zh')}
+                className="absolute top-4 right-4 md:top-6 md:right-8 z-50 flex items-center gap-2 bg-white/80 backdrop-blur px-4 py-2 rounded-full shadow-sm border border-[#D8D0C0] text-[#4A3B32] hover:text-[#4A7A3A] hover:border-[#4A7A3A] transition-all font-bold text-sm"
+              >
+                <Icon name="globe" size={16} />
+                {lang === 'zh' ? 'EN' : '中文'}
+              </button>
+
+              {/* 顶部学术风格 Header */}
+              <header className="bg-[#EFE8D8] border-b-4 border-[#4A7A3A] pt-16 pb-12 px-6">
+                <div className="max-w-5xl mx-auto relative">
+                  <div className="text-center md:text-left">
+                    <h1 className="text-4xl md:text-5xl font-bold text-[#3D2F25] mb-2 tracking-wide">
+                      星巴 <span className="text-2xl md:text-3xl font-normal text-[#6B5A4D]">Simba Qiang Zhuo</span>
+                    </h1>
+                    <p className="text-lg md:text-xl text-[#4A7A3A] font-medium mb-4">
+                      {t.header.role}
+                    </p>
+                    <p className="max-w-3xl text-sm md:text-base leading-relaxed text-[#5C4A3D] mx-auto md:mx-0">
+                      <strong>{t.header.missionLabel}</strong>{t.header.missionText}
+                    </p>
+                  </div>
+                </div>
+              </header>
+
+              {/* 导航栏 */}
+              <div className="bg-white border-b border-[#D8D0C0] sticky top-0 z-40 shadow-sm">
+                <div className="max-w-5xl mx-auto px-6">
+                  <nav className="flex overflow-x-auto hide-scrollbar">
+                    {tabs.map((tab) => {
+                      const isActive = activeTab === tab.id;
+                      return (
+                        <button
+                          key={tab.id}
+                          onClick={() => setActiveTab(tab.id)}
+                          className={`flex items-center gap-2 py-4 px-6 md:px-8 font-medium text-sm md:text-base whitespace-nowrap transition-colors duration-300 border-b-2 ${
+                            isActive
+                              ? 'border-[#4A7A3A] text-[#4A7A3A] bg-[#F4EBD0]/30'
+                              : 'border-transparent text-[#6B5A4D] hover:text-[#4A7A3A] hover:bg-gray-50'
+                          }`}
+                        >
+                          <Icon name={tab.iconName} size={18} />
+                          {tab.label}
+                        </button>
+                      );
+                    })}
+                  </nav>
+                </div>
+              </div>
+
+              {/* 主体内容区 */}
+              <main className="max-w-5xl mx-auto px-6 py-12">
+                
+                {/* ================= 栏目 1: 星巴简介 ================= */}
+                {activeTab === 'bio' && (
+                  <div className="animate-fade-in space-y-12">
+                    
+                    <section className="bg-white p-8 rounded-xl shadow-sm border border-[#E8E0CE]">
+                      <h2 className="text-2xl font-bold text-[#3D2F25] mb-6 flex items-center gap-2 border-b border-[#E8E0CE] pb-3">
+                        <Icon name="award" className="text-[#4A7A3A]" />
+                        {t.bio.title1}
+                      </h2>
+                      <ul className="space-y-3 text-[#5C4A3D] leading-relaxed list-disc list-inside marker:text-[#C82333]">
+                        {t.bio.roles.map((role, idx) => (
+                          <li key={idx}><strong className="text-[#3D2F25]">{role.strong}</strong>{role.text}</li>
+                        ))}
+                      </ul>
+                      <p className="mt-4 text-[#6B5A4D] italic border-l-4 border-[#4A7A3A] pl-4">
+                        {t.bio.quote}
+                      </p>
+                    </section>
+
+                    <section className="bg-white p-8 rounded-xl shadow-sm border border-[#E8E0CE]">
+                      <h2 className="text-2xl font-bold text-[#3D2F25] mb-8 flex items-center gap-2 border-b border-[#E8E0CE] pb-3">
+                        <Icon name="map-pin" className="text-[#4A7A3A]" />
+                        {t.bio.title2}
+                      </h2>
+                      <div className="relative border-l-2 border-[#D8D0C0] ml-4 md:ml-6 space-y-10">
+                        {t.bio.timeline.map((item, idx) => (
+                          <div key={idx} className="relative pl-8">
+                            <div className={`absolute w-4 h-4 ${item.color} rounded-full -left-[9px] top-1 ring-4 ring-white ${item.pulse ? 'animate-pulse' : ''}`}></div>
+                            <h3 className="text-lg font-bold text-[#3D2F25]">{item.period}</h3>
+                            <p className="text-[#6B5A4D] mt-2 whitespace-pre-line">{item.desc}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+
+                    {/* ================= 新增：演讲足迹 ================= */}
+                    <section className="bg-white p-8 rounded-xl shadow-sm border border-[#E8E0CE]">
+                      <h2 className="text-2xl font-bold text-[#3D2F25] mb-4 flex items-center gap-2 border-b border-[#E8E0CE] pb-3">
+                        <Icon name="mic" className="text-[#4A7A3A]" />
+                        {t.bio.footprints.title}
+                      </h2>
+                      <p className="text-[#6B5A4D] mb-8 leading-relaxed">
+                        {t.bio.footprints.desc}
+                      </p>
+
+                      <div className="mb-10">
+                        <h3 className="text-lg font-bold text-[#4A7A3A] mb-5 flex items-center gap-2 bg-[#F4EBD0]/40 p-2 rounded-md">
+                          <Icon name="map-pin" size={18} /> {t.bio.footprints.chinaTitle}
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5 text-sm text-[#5C4A3D]">
+                          {t.bio.footprints.china.map((item, idx) => (
+                             <div key={idx} className="leading-relaxed border-b border-gray-100 pb-2">
+                                <span className="font-bold text-[#C82333] mr-2 text-base">[{item.city}]</span>
+                                <span className="inline-block mt-1">{item.venues}</span>
+                             </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <h3 className="text-lg font-bold text-[#4A7A3A] mb-5 flex items-center gap-2 bg-[#F4EBD0]/40 p-2 rounded-md">
+                          <Icon name="globe" size={18} /> {t.bio.footprints.intlTitle}
+                        </h3>
+                        <div className="space-y-4 text-sm text-[#5C4A3D]">
+                          {t.bio.footprints.intl.map((item, idx) => (
+                             <div key={idx} className="bg-white p-5 rounded-lg border border-[#E8E0CE] shadow-sm hover:border-[#4A7A3A] transition-colors">
+                                <h4 className="font-bold text-[#C82333] text-base mb-3 flex items-center gap-2">
+                                  <Icon name="map" size={16} className="text-[#4A7A3A]" />
+                                  {item.country}
+                                </h4>
+                                <ul className="space-y-3">
+                                  {item.details.map((detail, dIdx) => (
+                                    <li key={dIdx} className="leading-relaxed">
+                                      <span className="font-bold text-[#3D2F25] bg-gray-100 px-2 py-0.5 rounded-sm mr-2">{detail.place}</span>
+                                      {detail.venues}
+                                    </li>
+                                  ))}
+                                </ul>
+                             </div>
+                          ))}
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                )}
+
+                {/* ================= 新增独立栏目 2: 星巴格言录 ================= */}
+                {activeTab === 'quotes' && (
+                  <div className="animate-fade-in space-y-8">
+                    <div className="mb-8">
+                      <h2 className="text-3xl font-bold text-[#3D2F25] mb-2">{t.quotes.title}</h2>
+                      <p className="text-[#6B5A4D] mb-6">{t.quotes.desc}</p>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {t.quotes.items.map((quote, idx) => (
+                        <div key={idx} className="relative bg-white p-6 rounded-xl border border-[#D8D0C0] shadow-sm hover:shadow-md hover:border-[#4A7A3A] transition-all group flex flex-col">
+                          <Icon name="quote" size={40} className="absolute -top-2 -left-2 text-[#F4EBD0] opacity-50 group-hover:text-[#EFE8D8] group-hover:rotate-12 transition-all z-0" />
+                          <div className="relative z-10 h-full flex flex-col">
+                            <p className="text-base text-[#4A3B32] font-medium leading-relaxed mb-4 italic flex-1">
+                              "{quote}"
+                            </p>
+                            <div className="flex items-center gap-2 border-t border-[#E8E0CE] pt-3 mt-auto">
+                              <div className="w-6 h-6 rounded-full bg-[#C82333] flex items-center justify-center shrink-0">
+                                <Icon name="user" size={12} className="text-white" />
+                              </div>
+                              <span className="font-bold text-[#3D2F25] text-sm tracking-wider">{lang === 'zh' ? '—— 星巴' : '— Simba'}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ================= 栏目 3: 野保项目 ================= */}
+                {activeTab === 'projects' && (
+                  <div className="animate-fade-in space-y-8">
+                    <div className="mb-8">
+                      <h2 className="text-3xl font-bold text-[#3D2F25] mb-3">{t.projects.title}</h2>
+                      <p className="text-[#6B5A4D] font-medium leading-relaxed max-w-4xl">{t.projects.subtitle}</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {t.projects.items.map((proj, idx) => (
+                        <div key={idx} className="bg-white p-6 md:p-8 rounded-xl border border-[#E8E0CE] hover:shadow-md transition-all hover:-translate-y-1 border-t-4 border-t-[#4A7A3A]">
+                          <Icon name={proj.iconName} className={`${proj.iconColor} mb-5`} size={36} />
+                          <h3 className="text-xl font-bold mb-4 text-[#3D2F25] leading-snug">{proj.title}</h3>
+                          <div className="text-[#6B5A4D] leading-relaxed text-sm space-y-3">
+                            {proj.content.map((para, i) => (
+                              <p key={i} className="flex gap-2">
+                                {proj.content.length > 1 && <span className="text-[#4A7A3A] font-bold shrink-0 mt-0.5">•</span>}
+                                <span>{para}</span>
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ================= 栏目 3: 科研文章 ================= */}
+                {activeTab === 'research' && (
+                  <div className="animate-fade-in space-y-6">
+                    <h2 className="text-3xl font-bold text-[#3D2F25] mb-2">{t.research.title}</h2>
+                    <p className="text-[#6B5A4D] mb-6">{t.research.desc}</p>
+
+                    {/* 搜索栏 */}
+                    <div className="relative mb-8">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Icon name="search" size={18} className="text-[#8A7D72]" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder={t.research.searchPlaceholder}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-11 pr-4 py-3 rounded-lg border border-[#D8D0C0] focus:outline-none focus:ring-2 focus:ring-[#4A7A3A] focus:border-transparent bg-white text-[#3D2F25] placeholder-[#8A7D72] shadow-sm transition-shadow"
+                      />
+                    </div>
+
+                    <div className="space-y-6">
+                      {filteredAndSortedArticles.length > 0 ? (
+                        filteredAndSortedArticles.map((article, i) => (
+                          <div key={i} className="flex gap-6 bg-white p-6 rounded-lg border border-[#E8E0CE] hover:border-[#4A7A3A] transition-colors shadow-sm">
+                            <div className="hidden md:flex flex-col items-center justify-center bg-[#F4EBD0] text-[#3D2F25] font-bold w-20 h-20 rounded-md shrink-0 shadow-inner">
+                              {article.year}
+                            </div>
+                            <div>
+                              <div className="text-xs font-bold tracking-wider text-[#C82333] mb-1">{article.type}</div>
+                              <h3 className="text-lg font-bold text-[#3D2F25] mb-2">{article.title}</h3>
+                              <p className="text-[#6B5A4D] text-sm leading-relaxed">{article.desc}</p>
+                              <a 
+                                href={article.link} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="mt-3 text-[#4A7A3A] text-sm font-bold inline-flex items-center gap-1 hover:underline cursor-pointer"
+                              >
+                                <Icon name="book" size={14} /> {t.research.readMore}
+                              </a>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-10 bg-white rounded-lg border border-dashed border-[#D8D0C0]">
+                          <p className="text-[#6B5A4D]">{t.research.emptyText}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* ================= 栏目 4: 购买电子笔记 ================= */}
+                {activeTab === 'notes' && (
+                  <div className="animate-fade-in space-y-8">
+                     <div className="bg-[#4A7A3A] text-white p-8 rounded-xl shadow-lg relative overflow-hidden">
+                       <div className="absolute -right-10 -top-10 opacity-10">
+                         <Icon name="leaf" size={200} />
+                       </div>
+                       <h2 className="text-3xl font-bold mb-4 relative z-10">{t.notes.bannerTitle}</h2>
+                       <p className="text-[#EFE8D8] max-w-2xl text-lg relative z-10 leading-relaxed">
+                         {t.notes.bannerDesc}
+                       </p>
+                     </div>
+
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {t.notes.items.map((note, idx) => (
+                          <div key={idx} className="bg-white rounded-xl border border-[#E8E0CE] overflow-hidden flex flex-col hover:shadow-xl transition-all translate-y-0 hover:-translate-y-1">
+                            <div className="p-6 flex-1 flex flex-col">
+                              <h3 className="text-xl font-bold text-[#3D2F25] mb-2">{note.title}</h3>
+                              <p className="text-[#6B5A4D] text-sm flex-1 mb-4">{note.desc}</p>
+                              <div className="flex items-center justify-between mt-auto">
+                                <span className="text-[#C82333] font-bold text-lg">{note.price}</span>
+                                {note.link ? (
+                                  <a href={note.link} target="_blank" rel="noopener noreferrer" className="bg-[#4A7A3A] hover:bg-[#3A602D] text-white px-4 py-2 rounded font-medium transition-colors text-sm inline-block text-center cursor-pointer">
+                                    {t.notes.btnText}
+                                  </a>
+                                ) : (
+                                  <button className="bg-[#4A7A3A] hover:bg-[#3A602D] text-white px-4 py-2 rounded font-medium transition-colors text-sm">
+                                    {t.notes.btnText}
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                     </div>
+                  </div>
+                )}
+
+                {/* ================= 栏目 5: 推荐电影/纪录片 ================= */}
+                {activeTab === 'movies' && (
+                  <div className="animate-fade-in space-y-8">
+                    <h2 className="text-3xl font-bold text-[#3D2F25] mb-2">{t.movies.title}</h2>
+                    <p className="text-[#6B5A4D] mb-6">{t.movies.desc}</p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                      {t.movies.items.map((movie, idx) => (
+                        <div key={idx} className="bg-white rounded-xl border border-[#E8E0CE] overflow-hidden flex flex-col hover:shadow-xl transition-all translate-y-0 hover:-translate-y-1">
+                          <div className="p-6 flex-1 flex flex-col">
+                            <div className="text-xs font-bold tracking-wider text-[#C82333] mb-2">{movie.platform}</div>
+                            <h3 className="text-xl font-bold text-[#3D2F25] mb-3">{movie.title}</h3>
+                            <p className="text-[#6B5A4D] text-sm flex-1 leading-relaxed">{movie.desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ================= 栏目 6: 推荐书籍 ================= */}
+                {activeTab === 'books' && (
+                  <div className="animate-fade-in space-y-8">
+                    <h2 className="text-3xl font-bold text-[#3D2F25] mb-2">{t.books.title}</h2>
+                    <p className="text-[#6B5A4D] mb-6">{t.books.desc}</p>
+
+                    <div className="space-y-6">
+                      {t.books.items.map((book, idx) => (
+                        <div key={idx} className="flex gap-6 bg-white p-6 rounded-lg border border-[#E8E0CE] hover:border-[#4A7A3A] transition-colors shadow-sm">
+                          <div className="hidden md:flex flex-col items-center justify-center bg-[#F4EBD0] text-[#4A7A3A] w-20 h-20 rounded-md shrink-0 shadow-inner">
+                            <Icon name="library" size={32} />
+                          </div>
+                          <div>
+                            <div className="text-xs font-bold tracking-wider text-[#C82333] mb-1">{book.author}</div>
+                            <h3 className="text-lg font-bold text-[#3D2F25] mb-2">
+                              {book.title}
+                            </h3>
+                            <p className="text-[#6B5A4D] text-sm leading-relaxed">{book.desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              </main>
+
+              {/* 底部强制生成信息与关注区域 */}
+              <footer className="mt-12 bg-[#3D2F25] text-[#D8D0C0] pt-12 pb-8 border-t-[8px] border-[#C82333]">
+                <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+                  
+                  <div className="space-y-4">
+                    <h3 className="text-xl font-bold text-white mb-4 border-b border-gray-600 pb-2 inline-block">{t.footer.official}</h3>
+                    <p className="flex items-center gap-2"><Icon name="shield" size={16} className="text-[#4A7A3A]"/> <strong>{t.footer.publish}</strong>{t.footer.academy}</p>
+                    <p className="flex items-center gap-2"><Icon name="user" size={16} className="text-[#4A7A3A]"/> <strong>{t.footer.founderLabel}</strong>{t.footer.founderName}</p>
+                    <p className="text-sm mt-4 text-gray-400">{t.footer.rights}</p>
+                  </div>
+
+                  <div className="space-y-4 md:text-right">
+                    <h3 className="text-xl font-bold text-white mb-4 border-b border-gray-600 pb-2 inline-block md:block md:w-max md:ml-auto">{t.footer.followTitle}</h3>
+                    <ul className="space-y-3 flex flex-col md:items-end">
+                      <li className="flex items-center gap-2 hover:text-white cursor-pointer transition-colors">
+                        <span className="bg-[#C82333] p-1 rounded-sm"><Icon name="book-open" size={14} className="text-white" /></span>
+                        {t.footer.socials[0]}
+                      </li>
+                      <li className="flex items-center gap-2 hover:text-white cursor-pointer transition-colors">
+                        <span className="bg-[#4A7A3A] p-1 rounded-sm"><Icon name="message-circle" size={14} className="text-white" /></span>
+                        {t.footer.socials[1]}
+                      </li>
+                      <li className="flex items-center gap-2 hover:text-white cursor-pointer transition-colors">
+                        <span className="bg-[#4A7A3A] p-1 rounded-sm"><Icon name="presentation" size={14} className="text-white" /></span>
+                        {t.footer.socials[2]}
+                      </li>
+                    </ul>
+                  </div>
+
+                </div>
+              </footer>
+            </div>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
